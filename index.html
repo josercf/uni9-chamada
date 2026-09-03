@@ -3,42 +3,95 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>Registrar presença</title>
+<title>Presença · Uninove</title>
 <style>
-  * { box-sizing: border-box; }
-  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-         background:#0f172a; color:#e2e8f0; display:flex; min-height:100vh; align-items:center; justify-content:center; padding:20px; }
-  .card { background:#1e293b; border-radius:18px; padding:26px 22px; width:100%; max-width:400px; box-shadow:0 10px 40px rgba(0,0,0,.4); }
-  h1 { font-size:20px; margin:0 0 4px; }
-  .sub { color:#94a3b8; font-size:13px; margin:0 0 22px; }
-  label { display:block; font-size:13px; margin:14px 0 6px; color:#cbd5e1; }
-  input { width:100%; padding:15px 14px; font-size:20px; border-radius:12px; border:1px solid #334155;
-          background:#0f172a; color:#fff; text-align:center; letter-spacing:2px; }
-  input:focus { outline:none; border-color:#38bdf8; }
-  #otp { font-size:30px; letter-spacing:8px; font-weight:700; }
-  button { width:100%; margin-top:22px; padding:16px; font-size:18px; font-weight:700; border:none;
-           border-radius:12px; background:#22c55e; color:#052e16; cursor:pointer; }
-  button:disabled { opacity:.5; }
-  .msg { margin-top:18px; padding:14px; border-radius:12px; font-size:15px; text-align:center; display:none; }
-  .ok { background:#052e16; color:#86efac; border:1px solid #16a34a; }
-  .err { background:#450a0a; color:#fca5a5; border:1px solid #dc2626; }
-  .foot { margin-top:18px; font-size:11px; color:#64748b; text-align:center; }
+  :root{
+    --marinho:#202377;
+    --vermelho:#f34c4c;
+    --tinta:#1b1c30;
+    --suave:#6b6f8a;
+    --linha:#e3e5ee;
+    --fundo:#f6f7fb;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--fundo); color:var(--tinta);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    display:flex; justify-content:center; padding:0 20px 40px;
+  }
+  .app{width:100%; max-width:420px}
+
+  .marca{display:flex; align-items:center; gap:10px; padding:28px 2px 22px}
+  .marca .nome{font-size:15px; font-weight:700; letter-spacing:.14em; color:var(--marinho)}
+  .pontos{display:flex; gap:3px}
+  .pontos i{width:7px; height:7px; background:var(--vermelho); border-radius:1px; display:block}
+
+  .cartao{background:#fff; border:1px solid var(--linha); border-radius:14px; padding:26px 22px 24px}
+  h1{margin:0 0 6px; font-size:23px; font-weight:650; letter-spacing:-.02em}
+  .sub{margin:0 0 26px; font-size:14px; line-height:1.5; color:var(--suave)}
+
+  label{display:block; font-size:12px; font-weight:600; letter-spacing:.06em;
+        text-transform:uppercase; color:var(--suave); margin:0 0 7px}
+  .campo{margin-bottom:20px}
+  input{
+    width:100%; padding:14px 15px; font-size:17px; font-family:inherit;
+    border:1.5px solid var(--linha); border-radius:10px; background:#fff; color:var(--tinta);
+    transition:border-color .15s;
+  }
+  input::placeholder{color:#b9bccd}
+  input:focus{outline:none; border-color:var(--marinho)}
+  #otp{font-size:30px; font-weight:650; letter-spacing:.42em; text-align:center; padding-left:.42em}
+
+  button{
+    width:100%; padding:15px; font-size:16px; font-weight:650; font-family:inherit;
+    border:none; border-radius:10px; background:var(--vermelho); color:#fff; cursor:pointer;
+    transition:opacity .15s;
+  }
+  button:active{opacity:.85}
+  button:disabled{opacity:.45; cursor:default}
+
+  .msg{margin-top:18px; padding:15px 16px; border-radius:10px; font-size:15px; line-height:1.45; display:none}
+  .ok{background:#eef7f1; color:#14663f; border:1px solid #cfe7da}
+  .ok strong{display:block; font-size:17px; margin-bottom:2px}
+  .err{background:#fdeeee; color:#a32020; border:1px solid #f6d5d5}
+
+  .nota{margin:22px 2px 0; font-size:11.5px; line-height:1.6; color:#9599b0}
+  .nota b{color:var(--suave); font-weight:600}
 </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Registrar presença</h1>
-    <p class="sub">Digite o seu RA e o código que aparece na tela da sala.</p>
+  <div class="app">
 
-    <label for="mat">RA (registro acadêmico)</label>
-    <input id="mat" type="tel" inputmode="numeric" autocomplete="off" placeholder="926105102">
+    <div class="marca">
+      <span class="nome">UNINOVE</span>
+      <span class="pontos"><i></i><i></i><i></i><i></i><i></i></span>
+    </div>
 
-    <label for="otp">Código da tela</label>
-    <input id="otp" type="tel" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="000000">
+    <div class="cartao">
+      <h1>Registrar presença</h1>
+      <p class="sub">Informe o seu RA e o código exibido na tela da sala.</p>
 
-    <button id="btn">Confirmar presença</button>
-    <div id="msg" class="msg"></div>
-    <div class="foot">O código muda a cada 30 segundos.</div>
+      <div class="campo">
+        <label for="mat">Seu RA</label>
+        <input id="mat" type="tel" inputmode="numeric" autocomplete="off" placeholder="926105102">
+      </div>
+
+      <div class="campo">
+        <label for="otp">Código da tela</label>
+        <input id="otp" type="tel" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="000000">
+      </div>
+
+      <button id="btn">Confirmar presença</button>
+      <div id="msg" class="msg"></div>
+    </div>
+
+    <p class="nota">
+      <b>Sobre seus dados.</b> Ao confirmar, registramos data, hora, RA, endereço de rede, navegador e,
+      se você autorizar, a localização aproximada. Servem apenas para validar a presença desta aula
+      e ficam restritos ao professor.
+    </p>
+
   </div>
 
 <script src="config.js"></script>
@@ -46,26 +99,60 @@
   var CFG = window.CHAMADA_CONFIG || {};
   var btn = document.getElementById("btn");
   var msg = document.getElementById("msg");
+  var campoRA = document.getElementById("mat");
+  var campoOTP = document.getElementById("otp");
 
-  function mostra(texto, tipo) {
-    msg.textContent = texto;
+  var geo = { lat:"", lon:"", acc:"" };
+
+  // pede a localizacao ja na abertura, para nao atrasar o envio
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(p){
+      geo.lat = p.coords.latitude.toFixed(6);
+      geo.lon = p.coords.longitude.toFixed(6);
+      geo.acc = Math.round(p.coords.accuracy);
+    }, function(){}, { enableHighAccuracy:true, timeout:8000, maximumAge:60000 });
+  }
+
+  // identificador do aparelho: estavel por navegador, sem dado pessoal
+  function fingerprint() {
+    var id = "";
+    try { id = localStorage.getItem("chamada_fp") || ""; } catch(e) {}
+    if (!id) {
+      id = "fp_" + Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
+      try { localStorage.setItem("chamada_fp", id); } catch(e) {}
+    }
+    var tela = (screen.width + "x" + screen.height);
+    return id + "|" + tela;
+  }
+
+  function mostra(html, tipo) {
+    msg.innerHTML = html;
     msg.className = "msg " + tipo;
     msg.style.display = "block";
   }
 
   function enviar() {
-    var mat = document.getElementById("mat").value.trim();
-    var otp = document.getElementById("otp").value.trim();
-    if (!mat) { mostra("Digite o seu RA.", "err"); return; }
-    if (otp.length < 4) { mostra("Digite o código da tela (6 dígitos).", "err"); return; }
+    var ra = campoRA.value.trim();
+    var otp = campoOTP.value.trim();
+    if (!ra) { mostra("Informe o seu RA.", "err"); return; }
+    if (otp.length < 4) { mostra("Informe o código da tela (6 dígitos).", "err"); return; }
     if (!CFG.WEBHOOK_BASE || CFG.WEBHOOK_BASE.indexOf("SEU-SUBDOMINIO") >= 0) {
       mostra("Sistema ainda não configurado. Avise o professor.", "err"); return;
     }
 
     btn.disabled = true; btn.textContent = "Enviando...";
 
-    // form-urlencoded evita preflight de CORS (requisicao simples)
-    var corpo = "ra=" + encodeURIComponent(mat) + "&otp=" + encodeURIComponent(otp);
+    var tz = "";
+    try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch(e) {}
+
+    var corpo =
+      "ra=" + encodeURIComponent(ra) +
+      "&otp=" + encodeURIComponent(otp) +
+      "&lat=" + encodeURIComponent(geo.lat) +
+      "&lon=" + encodeURIComponent(geo.lon) +
+      "&acc=" + encodeURIComponent(geo.acc) +
+      "&tz=" + encodeURIComponent(tz) +
+      "&fp=" + encodeURIComponent(fingerprint());
 
     fetch(CFG.WEBHOOK_BASE + "/presenca", {
       method: "POST",
@@ -76,8 +163,10 @@
     .then(function(r){
       btn.disabled = false; btn.textContent = "Confirmar presença";
       if (r && r.ok) {
-        mostra(r.msg || "Presença registrada!", "ok");
-        document.getElementById("otp").value = "";
+        var nome = (r.nome || "").trim();
+        var saudacao = nome ? ("Tudo certo, " + nome + "!") : "Tudo certo!";
+        mostra("<strong>" + saudacao + "</strong>" + (r.msg || "Presença registrada."), "ok");
+        campoOTP.value = "";
       } else {
         mostra((r && r.msg) || "Não foi possível registrar.", "err");
       }
@@ -89,7 +178,7 @@
   }
 
   btn.addEventListener("click", enviar);
-  document.getElementById("otp").addEventListener("keyup", function(e){ if (e.key === "Enter") enviar(); });
+  campoOTP.addEventListener("keyup", function(e){ if (e.key === "Enter") enviar(); });
 </script>
 </body>
 </html>

@@ -3,52 +3,97 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Chamada - Projeção</title>
+<title>Chamada · Uninove</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-  * { box-sizing:border-box; }
-  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-         background:#0f172a; color:#e2e8f0; min-height:100vh; }
-  .wrap { display:flex; min-height:100vh; align-items:center; justify-content:center; gap:60px; flex-wrap:wrap; padding:40px; }
-  .otpbox { text-align:center; }
-  .titulo { font-size:26px; color:#94a3b8; margin-bottom:6px; }
-  .data { font-size:18px; color:#64748b; margin-bottom:24px; }
-  .codigo { font-size:16vw; font-weight:800; letter-spacing:1.2vw; line-height:1; color:#fff; font-variant-numeric:tabular-nums; }
-  .fechada .codigo { color:#334155; }
-  .timer { margin-top:22px; font-size:22px; color:#38bdf8; }
-  .barra { height:12px; background:#1e293b; border-radius:6px; overflow:hidden; margin-top:12px; }
-  .barra > div { height:100%; background:#38bdf8; width:100%; }
-  .presentes { margin-top:20px; font-size:24px; color:#86efac; }
-  .qrbox { background:#fff; padding:22px; border-radius:18px; text-align:center; }
-  .qrleg { color:#0f172a; font-size:15px; margin-top:12px; font-weight:600; }
-  .controls { position:fixed; top:16px; right:16px; display:flex; gap:10px; }
-  .controls button { padding:12px 18px; font-size:15px; font-weight:700; border:none; border-radius:10px; cursor:pointer; }
-  #abrir { background:#22c55e; color:#052e16; }
-  #encerrar { background:#ef4444; color:#450a0a; }
-  .status { position:fixed; top:20px; left:20px; font-size:14px; color:#64748b; }
-  .aviso { font-size:26px; margin-top:20px; color:#fbbf24; }
+  :root{
+    --marinho:#202377;
+    --marinho-fundo:#1a1c63;
+    --vermelho:#f34c4c;
+    --tenue:rgba(255,255,255,.52);
+    --tenue2:rgba(255,255,255,.30);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--marinho-fundo); color:#fff;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; overflow:hidden;
+  }
+
+  .topo{
+    position:fixed; top:0; left:0; right:0; height:64px; padding:0 30px;
+    display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid rgba(255,255,255,.10);
+  }
+  .marca{display:flex; align-items:center; gap:11px}
+  .marca .nome{font-size:15px; font-weight:700; letter-spacing:.16em}
+  .pontos{display:flex; gap:3px}
+  .pontos i{width:7px; height:7px; background:var(--vermelho); border-radius:1px; display:block}
+  .turma{font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--tenue)}
+
+  .ctrl{display:flex; gap:9px}
+  .ctrl button{
+    padding:9px 16px; font-size:13px; font-weight:600; font-family:inherit;
+    border-radius:8px; border:1px solid rgba(255,255,255,.22);
+    background:transparent; color:#fff; cursor:pointer; transition:background .15s;
+  }
+  .ctrl button:hover{background:rgba(255,255,255,.10)}
+  #abrir{background:var(--vermelho); border-color:var(--vermelho)}
+
+  .palco{
+    height:100%; display:flex; align-items:center; justify-content:center;
+    gap:clamp(50px,8vw,120px); flex-wrap:wrap; padding:80px 40px 40px;
+  }
+
+  .rotulo{font-size:14px; letter-spacing:.22em; text-transform:uppercase; color:var(--tenue); margin-bottom:20px}
+  .codigo{
+    font-size:clamp(90px,15vw,230px); font-weight:700; line-height:.92;
+    letter-spacing:.06em; font-variant-numeric:tabular-nums; margin:0;
+  }
+  .fechada .codigo{color:rgba(255,255,255,.14)}
+
+  .trilho{height:6px; background:rgba(255,255,255,.13); border-radius:3px; overflow:hidden; margin-top:32px}
+  .trilho>div{height:100%; background:var(--vermelho); width:100%; border-radius:3px}
+  .rodape{display:flex; justify-content:space-between; margin-top:14px; font-size:14px; color:var(--tenue)}
+  .presentes{color:#fff; font-weight:600}
+
+  .qr{background:#fff; padding:20px; border-radius:14px; text-align:center}
+  .qr #qr img, .qr #qr canvas{display:block}
+  .qr .leg{color:var(--marinho); font-size:13px; font-weight:600; margin-top:12px; line-height:1.4}
+
+  .aviso{margin-top:26px; font-size:19px; color:#ffd7d7}
 </style>
 </head>
 <body>
-  <div class="status" id="status">carregando...</div>
-  <div class="controls">
-    <button id="abrir">Abrir chamada</button>
-    <button id="encerrar">Encerrar</button>
+
+  <div class="topo">
+    <div class="marca">
+      <span class="nome">UNINOVE</span>
+      <span class="pontos"><i></i><i></i><i></i><i></i><i></i></span>
+      <span class="turma" id="turma"></span>
+    </div>
+    <div class="ctrl">
+      <button id="abrir">Abrir chamada</button>
+      <button id="encerrar">Encerrar</button>
+    </div>
   </div>
 
-  <div class="wrap" id="wrap">
-    <div class="otpbox">
-      <div class="titulo">Código da chamada</div>
-      <div class="data" id="data"></div>
-      <div class="codigo" id="codigo">------</div>
-      <div class="timer"><span id="seg">--</span>s para trocar</div>
-      <div class="barra"><div id="barra"></div></div>
-      <div class="presentes" id="presentes"></div>
+  <div class="palco" id="palco">
+    <div>
+      <div class="rotulo">Código da chamada</div>
+      <div class="codigo" id="codigo">——————</div>
+      <div class="trilho"><div id="barra"></div></div>
+      <div class="rodape">
+        <span><span id="seg">--</span> s para trocar</span>
+        <span class="presentes" id="presentes"></span>
+      </div>
       <div class="aviso" id="aviso"></div>
     </div>
-    <div class="qrbox">
+
+    <div class="qr">
       <div id="qr"></div>
-      <div class="qrleg">Aponte a câmera<br>para marcar presença</div>
+      <div class="leg">Aponte a câmera<br>para registrar presença</div>
     </div>
   </div>
 
@@ -58,49 +103,48 @@
   var params = new URLSearchParams(location.search);
   var KEY = params.get("key") || "";
   var TURMA = (params.get("turma") || "").toLowerCase();
-  var estado = { aberta:false, secondsLeft:30, step:30 };
-
-  var elStatus = document.getElementById("status");
+  var estado = { aberta:false, secondsLeft:20, step:20 };
 
   if (CFG.FORM_URL && CFG.FORM_URL.indexOf("SEU-USUARIO") < 0) {
-    new QRCode(document.getElementById("qr"), { text: CFG.FORM_URL, width: 300, height: 300 });
+    new QRCode(document.getElementById("qr"), {
+      text: CFG.FORM_URL, width: 260, height: 260,
+      colorDark: "#202377", colorLight: "#ffffff"
+    });
   }
-  if (!KEY) { document.getElementById("aviso").textContent = "Falta a chave na URL: adicione ?key=SUA_CHAVE"; }
-  else if (!TURMA) { document.getElementById("aviso").textContent = "Falta a turma na URL: adicione &turma=quarta ou &turma=quinta"; }
+
+  var elAviso = document.getElementById("aviso");
+  if (!KEY) elAviso.textContent = "Falta a chave no endereço: acrescente ?key=SUA_CHAVE";
+  else if (!TURMA) elAviso.textContent = "Falta a turma no endereço: acrescente &turma=quarta ou &turma=quinta";
 
   function pintar() {
-    document.getElementById("codigo").textContent = estado.aberta ? estado.otp : "------";
-    var nomeTurma = (estado.turma || TURMA || "").toUpperCase();
-    document.getElementById("data").textContent = estado.aberta
-      ? ("Turma " + nomeTurma + " - " + (estado.dataSessao || ""))
-      : (nomeTurma ? ("Turma " + nomeTurma) : "");
-    document.getElementById("wrap").className = "wrap" + (estado.aberta ? "" : " fechada");
-    document.getElementById("aviso").textContent = estado.aberta ? "" : (KEY ? "Chamada fechada. Clique em Abrir chamada." : "");
-    document.getElementById("presentes").textContent = (estado.aberta && estado.totalAlunos)
-        ? (estado.presentes + " de " + estado.totalAlunos + " presentes")
-        : (estado.aberta && estado.presentes != null ? (estado.presentes + " presentes") : "");
-    elStatus.textContent = estado.aberta ? "chamada aberta" : "chamada fechada";
+    var nome = (estado.turma || TURMA || "").toUpperCase();
+    document.getElementById("turma").textContent = nome ? ("Turma " + nome) : "";
+    document.getElementById("codigo").textContent = estado.aberta ? estado.otp : "——————";
+    document.getElementById("palco").className = "palco" + (estado.aberta ? "" : " fechada");
+    document.getElementById("presentes").textContent =
+      estado.aberta && estado.presentes != null ? (estado.presentes + " presentes") : "";
+    if (KEY && TURMA) {
+      elAviso.textContent = estado.aberta ? "" : "Chamada fechada. Clique em Abrir chamada.";
+    }
   }
 
   function tick() {
-    var s = document.getElementById("seg");
-    if (!estado.aberta) { s.textContent = "--"; document.getElementById("barra").style.width = "0%"; return; }
+    var s = document.getElementById("seg"), b = document.getElementById("barra");
+    if (!estado.aberta) { s.textContent = "--"; b.style.width = "0%"; return; }
     estado.secondsLeft = Math.max(0, estado.secondsLeft - 1);
     s.textContent = estado.secondsLeft;
-    var frac = estado.secondsLeft / estado.step;
-    document.getElementById("barra").style.width = (100 * frac) + "%";
-    document.getElementById("barra").style.background = frac < 0.25 ? "#f87171" : "#38bdf8";
+    b.style.width = (100 * estado.secondsLeft / estado.step) + "%";
     if (estado.secondsLeft <= 0) atualizar();
   }
 
   function chamar(caminho, cb) {
     if (!CFG.WEBHOOK_BASE || CFG.WEBHOOK_BASE.indexOf("SEU-SUBDOMINIO") >= 0) {
-      elStatus.textContent = "config.js sem WEBHOOK_BASE"; return;
+      elAviso.textContent = "config.js sem WEBHOOK_BASE"; return;
     }
     fetch(CFG.WEBHOOK_BASE + caminho)
       .then(function(r){ return r.json(); })
       .then(function(r){ if (cb) cb(r); })
-      .catch(function(){ elStatus.textContent = "erro de conexão com o n8n"; });
+      .catch(function(){ elAviso.textContent = "Erro de conexão com o n8n"; });
   }
 
   function atualizar() {
@@ -114,8 +158,9 @@
     });
   }
   function abrir() {
-    if (!TURMA) { document.getElementById("aviso").textContent = "Escolha a turma na URL antes: &turma=quarta ou &turma=quinta"; return; }
-    chamar("/sessao?key=" + encodeURIComponent(KEY) + "&acao=abrir&turma=" + encodeURIComponent(TURMA), function(r){ estado = r; pintar(); });
+    if (!TURMA) { elAviso.textContent = "Escolha a turma no endereço: &turma=quarta ou &turma=quinta"; return; }
+    chamar("/sessao?key=" + encodeURIComponent(KEY) + "&acao=abrir&turma=" + encodeURIComponent(TURMA),
+      function(r){ estado = r; pintar(); });
   }
   function encerrar() {
     if (!confirm("Encerrar a chamada de hoje?")) return;
