@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Chamada - Projecao</title>
+<title>Chamada - Projeção</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   * { box-sizing:border-box; }
@@ -38,7 +38,7 @@
 
   <div class="wrap" id="wrap">
     <div class="otpbox">
-      <div class="titulo">Codigo da chamada</div>
+      <div class="titulo">Código da chamada</div>
       <div class="data" id="data"></div>
       <div class="codigo" id="codigo">------</div>
       <div class="timer"><span id="seg">--</span>s para trocar</div>
@@ -48,14 +48,16 @@
     </div>
     <div class="qrbox">
       <div id="qr"></div>
-      <div class="qrleg">Aponte a camera<br>para marcar presenca</div>
+      <div class="qrleg">Aponte a câmera<br>para marcar presença</div>
     </div>
   </div>
 
 <script src="config.js"></script>
 <script>
   var CFG = window.CHAMADA_CONFIG || {};
-  var KEY = new URLSearchParams(location.search).get("key") || "";
+  var params = new URLSearchParams(location.search);
+  var KEY = params.get("key") || "";
+  var TURMA = (params.get("turma") || "").toLowerCase();
   var estado = { aberta:false, secondsLeft:30, step:30 };
 
   var elStatus = document.getElementById("status");
@@ -64,10 +66,14 @@
     new QRCode(document.getElementById("qr"), { text: CFG.FORM_URL, width: 300, height: 300 });
   }
   if (!KEY) { document.getElementById("aviso").textContent = "Falta a chave na URL: adicione ?key=SUA_CHAVE"; }
+  else if (!TURMA) { document.getElementById("aviso").textContent = "Falta a turma na URL: adicione &turma=quarta ou &turma=quinta"; }
 
   function pintar() {
     document.getElementById("codigo").textContent = estado.aberta ? estado.otp : "------";
-    document.getElementById("data").textContent = estado.aberta ? ("Chamada de " + (estado.dataSessao || "")) : "";
+    var nomeTurma = (estado.turma || TURMA || "").toUpperCase();
+    document.getElementById("data").textContent = estado.aberta
+      ? ("Turma " + nomeTurma + " - " + (estado.dataSessao || ""))
+      : (nomeTurma ? ("Turma " + nomeTurma) : "");
     document.getElementById("wrap").className = "wrap" + (estado.aberta ? "" : " fechada");
     document.getElementById("aviso").textContent = estado.aberta ? "" : (KEY ? "Chamada fechada. Clique em Abrir chamada." : "");
     document.getElementById("presentes").textContent = (estado.aberta && estado.totalAlunos)
@@ -94,7 +100,7 @@
     fetch(CFG.WEBHOOK_BASE + caminho)
       .then(function(r){ return r.json(); })
       .then(function(r){ if (cb) cb(r); })
-      .catch(function(){ elStatus.textContent = "erro de conexao com o n8n"; });
+      .catch(function(){ elStatus.textContent = "erro de conexão com o n8n"; });
   }
 
   function atualizar() {
@@ -107,7 +113,10 @@
       }
     });
   }
-  function abrir() { chamar("/sessao?key=" + encodeURIComponent(KEY) + "&acao=abrir", function(r){ estado = r; pintar(); }); }
+  function abrir() {
+    if (!TURMA) { document.getElementById("aviso").textContent = "Escolha a turma na URL antes: &turma=quarta ou &turma=quinta"; return; }
+    chamar("/sessao?key=" + encodeURIComponent(KEY) + "&acao=abrir&turma=" + encodeURIComponent(TURMA), function(r){ estado = r; pintar(); });
+  }
   function encerrar() {
     if (!confirm("Encerrar a chamada de hoje?")) return;
     chamar("/sessao?key=" + encodeURIComponent(KEY) + "&acao=encerrar", function(r){ estado = r; pintar(); });
