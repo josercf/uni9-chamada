@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chamada - Projecao</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+         background:#0f172a; color:#e2e8f0; min-height:100vh; }
+  .wrap { display:flex; min-height:100vh; align-items:center; justify-content:center; gap:60px; flex-wrap:wrap; padding:40px; }
+  .otpbox { text-align:center; }
+  .titulo { font-size:26px; color:#94a3b8; margin-bottom:6px; }
+  .data { font-size:18px; color:#64748b; margin-bottom:24px; }
+  .codigo { font-size:16vw; font-weight:800; letter-spacing:1.2vw; line-height:1; color:#fff; font-variant-numeric:tabular-nums; }
+  .fechada .codigo { color:#334155; }
+  .timer { margin-top:22px; font-size:22px; color:#38bdf8; }
+  .barra { height:12px; background:#1e293b; border-radius:6px; overflow:hidden; margin-top:12px; }
+  .barra > div { height:100%; background:#38bdf8; width:100%; }
+  .presentes { margin-top:20px; font-size:24px; color:#86efac; }
+  .qrbox { background:#fff; padding:22px; border-radius:18px; text-align:center; }
+  .qrleg { color:#0f172a; font-size:15px; margin-top:12px; font-weight:600; }
+  .controls { position:fixed; top:16px; right:16px; display:flex; gap:10px; }
+  .controls button { padding:12px 18px; font-size:15px; font-weight:700; border:none; border-radius:10px; cursor:pointer; }
+  #abrir { background:#22c55e; color:#052e16; }
+  #encerrar { background:#ef4444; color:#450a0a; }
+  .status { position:fixed; top:20px; left:20px; font-size:14px; color:#64748b; }
+  .aviso { font-size:26px; margin-top:20px; color:#fbbf24; }
+</style>
+</head>
+<body>
+  <div class="status" id="status">carregando...</div>
+  <div class="controls">
+    <button id="abrir">Abrir chamada</button>
+    <button id="encerrar">Encerrar</button>
+  </div>
+
+  <div class="wrap" id="wrap">
+    <div class="otpbox">
+      <div class="titulo">Codigo da chamada</div>
+      <div class="data" id="data"></div>
+      <div class="codigo" id="codigo">------</div>
+      <div class="timer"><span id="seg">--</span>s para trocar</div>
+      <div class="barra"><div id="barra"></div></div>
+      <div class="presentes" id="presentes"></div>
+      <div class="aviso" id="aviso"></div>
+    </div>
+    <div class="qrbox">
+      <div id="qr"></div>
+      <div class="qrleg">Aponte a camera<br>para marcar presenca</div>
+    </div>
+  </div>
+
+<script src="config.js"></script>
+<script>
+  var CFG = window.CHAMADA_CONFIG || {};
+  var KEY = new URLSearchParams(location.search).get("key") || "";
+  var estado = { aberta:false, secondsLeft:30, step:30 };
+
+  var elStatus = document.getElementById("status");
+
+  if (CFG.FORM_URL && CFG.FORM_URL.indexOf("SEU-USUARIO") < 0) {
+    new QRCode(document.getElementById("qr"), { text: CFG.FORM_URL, width: 300, height: 300 });
+  }
+  if (!KEY) { document.getElementById("aviso").textContent = "Falta a chave na URL: adicione ?key=SUA_CHAVE"; }
+
+  function pintar() {
+    document.getElementById("codigo").textContent = estado.aberta ? estado.otp : "------";
+    document.getElementById("data").textContent = estado.aberta ? ("Chamada de " + (estado.dataSessao || "")) : "";
+    document.getElementById("wrap").className = "wrap" + (estado.aberta ? "" : " fechada");
+    document.getElementById("aviso").textContent = estado.aberta ? "" : (KEY ? "Chamada fechada. Clique em Abrir chamada." : "");
+    document.getElementById("presentes").textContent = (estado.aberta && estado.totalAlunos)
+        ? (estado.presentes + " de " + estado.totalAlunos + " presentes")
+        : (estado.aberta && estado.presentes != null ? (estado.presentes + " presentes") : "");
+    elStatus.textContent = estado.aberta ? "chamada aberta" : "chamada fechada";
+  }
+
+  function tick() {
+    var s = document.getElementById("seg");
+    if (!estado.aberta) { s.textContent = "--"; document.getElementById("barra").style.width = "0%"; return; }
+    estado.secondsLeft = Math.max(0, estado.secondsLeft - 1);
+    s.textContent = estado.secondsLeft;
+    var frac = estado.secondsLeft / estado.step;
+    document.getElementById("barra").style.width = (100 * frac) + "%";
+    document.getElementById("barra").style.background = frac < 0.25 ? "#f87171" : "#38bdf8";
+    if (estado.secondsLeft <= 0) atualizar();
+  }
+
+  function chamar(caminho, cb) {
+    if (!CFG.WEBHOOK_BASE || CFG.WEBHOOK_BASE.indexOf("SEU-SUBDOMINIO") >= 0) {
+      elStatus.textContent = "config.js sem WEBHOOK_BASE"; return;
+    }
+    fetch(CFG.WEBHOOK_BASE + caminho)
+      .then(function(r){ return r.json(); })
+      .then(function(r){ if (cb) cb(r); })
+      .catch(function(){ elStatus.textContent = "erro de conexao com o n8n"; });
+  }
+
+  function atualizar() {
+    if (!KEY) return;
+    chamar("/otp?key=" + encodeURIComponent(KEY), function(r){
+      estado = r; pintar();
+      if (r.aberta) {
+        document.getElementById("seg").textContent = r.secondsLeft;
+        document.getElementById("barra").style.width = (100 * r.secondsLeft / r.step) + "%";
+      }
+    });
+  }
+  function abrir() { chamar("/sessao?key=" + encodeURIComponent(KEY) + "&acao=abrir", function(r){ estado = r; pintar(); }); }
+  function encerrar() {
+    if (!confirm("Encerrar a chamada de hoje?")) return;
+    chamar("/sessao?key=" + encodeURIComponent(KEY) + "&acao=encerrar", function(r){ estado = r; pintar(); });
+  }
+
+  document.getElementById("abrir").addEventListener("click", abrir);
+  document.getElementById("encerrar").addEventListener("click", encerrar);
+
+  atualizar();
+  setInterval(tick, 1000);
+  setInterval(atualizar, 3000);
+</script>
+</body>
+</html>
